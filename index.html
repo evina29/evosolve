@@ -3,94 +3,70 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>evosolve — an algorithm that invented itself</title>
+<title>evosolve demo</title>
 <style>
-  :root{
-    --bg:#0f1817; --panel:#16211f; --border:#294038; --fg:#eaf6f3; --muted:#a7bcb8;
-    --teal:#16b8a3; --blue:#3b82f6; --violet:#8b5cf6; --coral:#ff5d6c; --amber:#ffb020;
+  body{
+    font-family:"Times New Roman", Times, serif;
+    color:#000; background:#fff;
+    max-width:720px; margin:20px auto; padding:0 16px;
   }
-  *{box-sizing:border-box}
-  body{margin:0;background:var(--bg);color:var(--fg);
-    font-family:ui-sans-serif,system-ui,"Segoe UI",Inter,sans-serif;line-height:1.6}
-  .wrap{max-width:860px;margin:0 auto;padding:32px 20px 64px}
-  h1{font-size:clamp(30px,6vw,52px);margin:0 0 6px;letter-spacing:-.02em}
-  h1 .grad{background:linear-gradient(90deg,#16b8a3,#3b82f6,#8b5cf6,#ff5d6c,#ffb020);
-    -webkit-background-clip:text;background-clip:text;color:transparent}
-  .sub{color:var(--muted);font-size:clamp(16px,2.4vw,20px);margin:0 0 26px}
-  .card{background:var(--panel);border:1px solid var(--border);border-radius:16px;
-    padding:22px;margin:20px 0}
-  canvas{width:100%;height:auto;display:block;background:#0b1211;border-radius:10px}
-  .controls{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin-top:14px}
-  button{font:inherit;font-weight:600;border:none;border-radius:9999px;padding:10px 20px;
-    background:var(--teal);color:#062;cursor:pointer;transition:transform .1s,background .2s}
-  button:hover{transform:translateY(-1px);background:#1ad0b8}
-  button.ghost{background:transparent;color:var(--fg);border:1px solid var(--border)}
-  label{color:var(--muted);font-size:14px}
-  input[type=range]{vertical-align:middle}
-  .legend{display:flex;flex-wrap:wrap;gap:16px;margin-top:12px;font-size:14px}
-  .legend span{display:inline-flex;align-items:center;gap:7px}
-  .dot{width:14px;height:4px;border-radius:2px;display:inline-block}
-  pre{background:#0b1211;border:1px solid var(--border);border-radius:10px;padding:16px;
-    overflow-x:auto;color:#cfe;font-size:14px;line-height:1.5}
-  .win{color:var(--teal);font-weight:700}
-  code{background:#0b1211;padding:2px 6px;border-radius:5px}
-  a{color:var(--teal)}
-  .foot{color:var(--muted);font-size:14px;margin-top:34px;text-align:center}
-  .badges{display:flex;gap:10px;flex-wrap:wrap;margin:10px 0 26px}
-  .badge{font-size:13px;color:var(--muted);border:1px solid var(--border);
-    border-radius:9999px;padding:5px 12px}
+  h1{font-size:26px; margin-bottom:4px;}
+  h2{font-size:19px; margin-top:28px;}
+  p{margin:10px 0;}
+  canvas{border:1px solid #000; width:100%; height:auto; background:#fff;}
+  button{font-family:inherit; font-size:15px; margin-right:8px; margin-top:8px;}
+  pre{background:#f2f2f2; border:1px solid #ccc; padding:10px; overflow-x:auto; font-size:13px;}
+  hr{border:none; border-top:1px solid #ccc; margin:24px 0;}
+  .small{font-size:13px; color:#444;}
 </style>
 </head>
 <body>
-<div class="wrap">
-  <h1>evosolve: <span class="grad">an algorithm that invented itself</span></h1>
-  <p class="sub">a search process, given only primitive math operations, invented a
-  numerical algorithm for solving linear systems. it landed on conjugate gradient,
-  a method humans took decades to develop. watch it run below, live, against the
-  older methods it beats.</p>
-  <div class="badges">
-    <span class="badge">no libraries, runs in your browser</span>
-    <span class="badge">real solvers, real convergence</span>
-    <span class="badge">python source on github</span>
-  </div>
 
-  <div class="card">
-    <canvas id="plot" width="820" height="440" aria-label="convergence plot"></canvas>
-    <div class="legend">
-      <span><i class="dot" style="background:#8b96a3"></i> jacobi (1840s)</span>
-      <span><i class="dot" style="background:#ffb020"></i> steepest descent (1950s)</span>
-      <span><i class="dot" style="background:#16b8a3;height:5px"></i> <b>discovered algorithm</b> (= conjugate gradient)</span>
-    </div>
-    <div class="controls">
-      <button id="run">▶ run it</button>
-      <button id="new" class="ghost">shuffle a new system</button>
-      <label>size&nbsp;<input id="size" type="range" min="20" max="120" value="60"></label>
-      <span id="nlabel" class="muted" style="color:var(--muted);font-size:14px"></span>
-    </div>
-    <p id="verdict" style="margin:14px 2px 0;color:var(--muted);font-size:15px"></p>
-  </div>
+<h1>evosolve</h1>
+<p>A search program was given only basic math operations and told to find a good
+way to solve linear systems (Ax = b). On its own it came up with an algorithm
+that turned out to be conjugate gradient, a method that took people decades to
+figure out. Below it runs live in your browser against two older, simpler methods
+on the same problem.</p>
 
-  <div class="card">
-    <h3 style="margin-top:0">the algorithm the search wrote</h3>
-    <p style="color:var(--muted);margin-top:0">assembled from random building blocks, then refined. this is exactly conjugate gradient:</p>
-<pre>beta_k  = (r . r) / (r . r)_prev        # fletcher reeves
-alpha_k = (r . r) / (d . a d)           # optimal step length
-d_k     = r_k + beta_k * p_(k-1)        # search direction
-x_(k+1) = x_k + alpha_k * d_k           # update  ( r_k = b - a x_k )</pre>
-    <p style="color:var(--muted)">the same engine also rediscovers <b>gcr</b> for nonsymmetric
-    systems and discovers <b>polynomial preconditioners</b>. full write up and the honest
-    results (including where it does not beat the state of the art) are in the readme.</p>
-  </div>
+<canvas id="plot" width="820" height="440"></canvas>
 
-  <p class="foot">
-    built by evina &nbsp;·&nbsp;
-    <a href="https://github.com/evina29/evosolve">source code on github</a> &nbsp;·&nbsp;
-    <a href="https://github.com/evina29/evosolve/blob/HEAD/README.md">readme</a>
-  </p>
-</div>
+<p>
+  <button id="run">Run it</button>
+  <button id="new">New random system</button>
+  <label class="small">Size: <input id="size" type="range" min="20" max="120" value="60"></label>
+  <span id="nlabel" class="small"></span>
+</p>
+
+<p class="small">
+  Gray line = Jacobi method.&nbsp;&nbsp;
+  Orange line = steepest descent.&nbsp;&nbsp;
+  Blue line = the discovered algorithm (conjugate gradient).
+</p>
+<p id="verdict" class="small"></p>
+
+<hr>
+
+<h2>The algorithm the search found</h2>
+<p>It was built up from random pieces and then tuned. This is exactly conjugate gradient:</p>
+<pre>beta_k  = (r . r) / (r . r)_prev
+alpha_k = (r . r) / (d . A d)
+d_k     = r_k + beta_k * p_(k-1)
+x_(k+1) = x_k + alpha_k * d_k        (r_k = b - A x_k)</pre>
+
+<p>The same program also finds GCR for nonsymmetric systems and discovers
+polynomial preconditioners. The full write-up and the honest results, including
+where it does not beat the best existing methods, are in the README.</p>
+
+<hr>
+<p class="small">
+  Made by evina.
+  <a href="https://github.com/evina29/evosolve">Source code</a> |
+  <a href="https://github.com/evina29/evosolve/blob/HEAD/README.md">README</a>
+</p>
 
 <script>
-// ---- 1d poisson system a x = b (symmetric positive definite) --------------
+// 1d poisson system a x = b (symmetric positive definite)
 let N = 60, b, bnorm;
 function buildSystem(n){
   N = n;
@@ -98,11 +74,9 @@ function buildSystem(n){
   b = matvec(xstar);
   bnorm = Math.sqrt(dot(b,b)) || 1;
 }
-function matvec(x){                       // tridiagonal: 2 on diag, -1 off diag
+function matvec(x){
   const n=x.length, y=new Array(n);
-  for(let i=0;i<n;i++){
-    y[i] = 2*x[i] - (i>0?x[i-1]:0) - (i<n-1?x[i+1]:0);
-  }
+  for(let i=0;i<n;i++){ y[i] = 2*x[i] - (i>0?x[i-1]:0) - (i<n-1?x[i+1]:0); }
   return y;
 }
 function dot(a,c){let s=0;for(let i=0;i<a.length;i++)s+=a[i]*c[i];return s;}
@@ -116,7 +90,7 @@ function jacobi(){
     const r=axpy(-1,matvec(x),b);
     const rel=Math.sqrt(dot(r,r))/bnorm; h.push(rel);
     if(rel<TOL) break;
-    for(let i=0;i<N;i++) x[i]+=r[i]/2;   // diagonal is 2
+    for(let i=0;i<N;i++) x[i]+=r[i]/2;
   }
   return h;
 }
@@ -130,7 +104,7 @@ function steepest(){
   }
   return h;
 }
-function discovered(){                    // the rediscovered algorithm = cg
+function discovered(){
   let x=new Array(N).fill(0), r=axpy(-1,matvec(x),b), p=r.slice(), h=[];
   let rsold=dot(r,r);
   for(let k=0;k<MAXIT;k++){
@@ -144,24 +118,21 @@ function discovered(){                    // the rediscovered algorithm = cg
   return h;
 }
 
-// ---- plotting -------------------------------------------------------------
 const cv=document.getElementById("plot"), ctx=cv.getContext("2d");
-const W=cv.width, H=cv.height, mL=60, mR=20, mT=20, mB=44;
-const yTop=0, yBot=-10;                    // log10 scale from 1e0 to 1e-10
+const W=cv.width, H=cv.height, mL=56, mR=16, mT=16, mB=40;
+const yTop=0, yBot=-10;
 function xpix(it,maxit){return mL+(W-mL-mR)*(it/maxit);}
 function ypix(rel){const l=Math.log10(Math.max(rel,1e-12));
   return mT+(H-mT-mB)*(yTop-l)/(yTop-yBot);}
 function grid(maxit){
   ctx.clearRect(0,0,W,H);
-  ctx.strokeStyle="#1c2a28"; ctx.fillStyle="#7f9a95"; ctx.font="12px system-ui"; ctx.lineWidth=1;
+  ctx.strokeStyle="#ddd"; ctx.fillStyle="#000"; ctx.font="12px Times New Roman"; ctx.lineWidth=1;
   for(let e=0;e>=-10;e-=2){
     const y=ypix(Math.pow(10,e));
     ctx.beginPath();ctx.moveTo(mL,y);ctx.lineTo(W-mR,y);ctx.stroke();
-    ctx.fillText("1e"+e, 8, y+4);
+    ctx.fillText("1e"+e, 6, y+4);
   }
-  ctx.fillText("iterations →", W/2-30, H-12);
-  ctx.save();ctx.translate(16,H/2+40);ctx.rotate(-Math.PI/2);
-  ctx.fillText("relative residual (log)",0,0);ctx.restore();
+  ctx.fillText("iterations", W/2-24, H-10);
 }
 function drawLine(h,maxit,color,width,upto){
   ctx.strokeStyle=color; ctx.lineWidth=width; ctx.beginPath();
@@ -182,21 +153,20 @@ function run(){
   let f=0;
   function frame(){
     grid(maxit);
-    drawLine(hj,maxit,"#8b96a3",2,f);
-    drawLine(hs,maxit,"#ffb020",2,f);
-    drawLine(hd,maxit,"#16b8a3",3.4,f);
+    drawLine(hj,maxit,"#888",2,f);
+    drawLine(hs,maxit,"#e69500",2,f);
+    drawLine(hd,maxit,"#0033cc",3,f);
     f+=3;
     if(f<maxit+3){anim=requestAnimationFrame(frame);}
     else{
-      verdict.innerHTML="the <span class='win'>discovered algorithm</span> reached "+
-        "10⁻¹⁰ in <b>"+hd.length+"</b> steps. steepest descent took "+
-        (hs.length>=MAXIT?"more than "+MAXIT:hs.length)+", and jacobi "+
-        (hj.length>=MAXIT?"never got there":hj.length+"")+". same problem, three algorithms.";
+      verdict.textContent="The discovered algorithm reached 1e-10 in "+hd.length+
+        " steps. Steepest descent took "+(hs.length>=MAXIT?"more than "+MAXIT:hs.length)+
+        ", and Jacobi "+(hj.length>=MAXIT?"never got there":hj.length)+
+        ". Same problem, three algorithms.";
     }
   }
   frame();
 }
-
 function reset(){
   buildSystem(parseInt(document.getElementById("size").value,10));
   document.getElementById("nlabel").textContent="n = "+N+" unknowns";
