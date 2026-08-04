@@ -1,0 +1,16 @@
+discovered algorithm
+============================================================
+beta_k  = 1*rr/rr_prev
+alpha_k = 1*rr/dAd
+d_k     = r_k + beta_k * p_(k-1)
+x_(k+1) = x_k + alpha_k * d_k
+
+head to head vs conjugate gradient (held out problems)
+============================================================
+poisson1d_n128       discovered=129  cg=129  [tie ]
+poisson2d_16x16      discovered=51  cg=51  [tie ]
+diagdom_n120         discovered=18  cg=18  [tie ]
+spd_cond1000_n80     discovered=120  cg=120  [tie ]
+spd_cond10000_n80    discovered=207  cg=207  [tie ]
+
+vs cg    wins:0  ties:5  losses:0

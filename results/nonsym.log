@@ -1,0 +1,31 @@
+======================================================================
+  experiment b: nonsymmetric systems (can it find something good?)
+======================================================================
+train families: convdiff_12x12_pe15, convdiff_12x12_pe30, nonsymdd_n70
+held out test : convdiff_16x16_pe20, convdiff_16x16_pe60, nonsymdd_n120, recirc_n100
+(recirc is an entirely unseen family)
+
+seed 1: solved 4/4  beta=(0.5632*rp/rr_prev) alpha=(1.15*dAd/AdAd)
+seed 2: solved 4/4  beta=(1.33*rp/pp) alpha=(1.04*rAr/AdAd)
+seed 3: solved 3/4  beta=(0.1963*rr_prev/pp) alpha=(1*rr/dAd)
+seed 4: solved 4/4  beta=(0.7475*rp/rr_prev) alpha=(1.072*dAd/AdAd)
+seed 5: solved 4/4  beta=(0.575*rp/rr_prev) alpha=(1.15*dAd/AdAd)
+
+held out cost in matrix vector products, discovered (mean +/- std over seeds) vs baselines:
+problem                       discoveredgmres_restar    bicgstab   orthomin1
+============================================================================
+convdiff_16x16_pe20              87+/-34          57          66         256
+convdiff_16x16_pe60              63+/-31          47          44         102
+nonsymdd_n120                    34+/-11          23          26          48
+recirc_n100                    334+/-131          21          28          52
+
+win rate of discovered vs each baseline in matvecs (over all seed/problem pairs):
+  vs gmres_restarted  2/20 = 10%
+  vs bicgstab         2/20 = 10%
+  vs orthomin1        13/20 = 65%
+
+best discovered nonsymmetric solver (seed 1):
+beta_k  = 0.5632*rp/rr_prev
+alpha_k = 1.15*dAd/AdAd
+d_k     = r_k + beta_k * p_(k-1)
+x_(k+1) = x_k + alpha_k * d_k

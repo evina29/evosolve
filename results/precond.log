@@ -1,0 +1,17 @@
+======================================================================
+  experiment c: polynomial preconditioner discovery (spd)
+======================================================================
+discovered polynomial coefficients c_0..c_d:
+  +0.985, +1.235, +0.511, +0.064
+(degree 3, so preconditioner costs 3 matvecs per apply)
+
+held out style comparison, total matrix vector products to converge:
+problem                 plain cg   jacobi cg  discovered
+========================================================
+poisson2d_14x14               43          43          80
+spd_cond1000_n60             103         101         228
+spd_cond10000_n60            168         157         424
+diagdom_n90                   17          13          32
+
+discovered beats plain cg on 0/4, jacobi cg on 0/4 (total matvecs).
+note: a degree d preconditioner adds d matvecs per iteration, so a win here means fewer iterations more than paid for the extra applies.

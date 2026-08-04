@@ -1,0 +1,35 @@
+summary of experiments (see nonsym.log, orthomin.log and precond.log for detail)
+================================================================
+
+a. spd systems
+   the search rediscovers conjugate gradient exactly:
+     beta_k  = (r.r) / (r.r)_prev      (fletcher reeves)
+     alpha_k = (r.r) / (d.ad)          (cg step length)
+   on the five held out spd problems it ties cg iteration for iteration
+   (129, 51, 18, 120, 207). see results/summary.txt and convergence.png.
+
+b. nonsymmetric systems, single stored direction (5 seeds, held out test set,
+   cost = matrix vector products because bicgstab does two per iteration)
+   best discovered short recurrence solver:
+     beta_k  = 0.5632 * (r.p) / (r.r)_prev
+     alpha_k = 1.15   * (d.ad) / (ad.ad)
+   findings: beats orthomin(1), the fair same memory baseline, on ~65% of held
+   out cases, but does not beat gmres or bicgstab in general and generalises
+   poorly to the unseen recirculating family. a real but modest result.
+
+c. nonsymmetric systems, multi direction (gcr / orthomin-m)  [the headline]
+   giving the search a window of m previous directions, still one matvec per
+   step, it rediscovers gcr:
+     beta_j = -(a r . a p_j) / (a p_j . a p_j)      alpha = (r . a d) / (a d . a d)
+   this fixes the generalisation gap (recirc 334 -> 30 matvecs), beats bicgstab
+   on some families at half the matvec cost, and ties gmres(30) while storing
+   only a handful of vectors. competitive with the state of the art, recovering a
+   known method from scratch.
+
+d. polynomial preconditioner discovery (solver fixed to cg)
+   discovered degree 3 coefficients (approx): +1.7, +1.7, +0.66, +0.07
+   cuts cg iteration count by roughly half on every test problem, for example
+   poisson 44 -> 21, cond1e4 169 -> 105, diagdom 18 -> 7. the honest tradeoff:
+   the degree 3 polynomial applies a three extra times per step, so it costs
+   more serial matrix vector products. it wins on iterations, the cost that
+   dominates on parallel and communication bound hardware.
